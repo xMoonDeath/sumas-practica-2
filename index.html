@@ -242,6 +242,9 @@ function guardar(){
     tiempoConfig: tiempoLimite.value
   };
 
+  guardarOnline(datos);
+}
+
 function finalizar(){
   suma.textContent="🏁 Examen terminado";
   tiempoTexto.textContent="";
@@ -276,7 +279,7 @@ function reiniciar(){
   clearInterval(intervalo);
   suma.textContent="";
   resultado.textContent="";
-  document.getElementById("tiempo").textContent="";
+  tiempoTexto.textContent="";
   contador.textContent="";
   puntaje=0;
   pregunta=0;
