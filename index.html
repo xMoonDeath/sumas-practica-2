@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Competencia de Sumas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.card{
+  background:white;
+  padding:30px;
+  border-radius:20px;
+  width:100%;
+  max-width:750px;
+  box-shadow:0 20px 40px rgba(0,0,0,.35);
+  text-align:center;
+}
+
+h2{margin-bottom:10px}
+
+label{
+  font-weight:bold;
+  display:block;
+  margin-top:12px;
+}
+
+select,input,button{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+button{
+  background:#667eea;
+  color:white;
+  border:none;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+button.secondary{background:#f6ad55}
+button.danger{background:#e53e3e}
+
+#suma{
+  font-size:100px;
+  font-weight:900;
+  margin:40px 0;
+}
+
+#resultado{
+  font-size:70px;
+  font-weight:900;
+  color:#38a169;
+}
+
+#tiempo{
+  font-size:30px;
+  font-weight:bold;
+  color:#e53e3e;
+}
+
+#contador{
+  margin-top:10px;
+  font-weight:bold;
+}
+
+table{
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+}
+
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
+}
+
+th{
+  background:#edf2f7;
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+<h2>🏆 Competencia de Sumas</h2>
+
+<label>Nombre del estudiante</label>
+<input id="nombre" placeholder="Ej: Carlos">
+
+<label>Dificultad</label>
+<select id="dificultad">
+  <option value="10">1 dígito</option>
+  <option value="100">2 dígitos</option>
+  <option value="1000">3 dígitos</option>
+</select>
+
+<label>Tiempo por suma (seg)</label>
+<input type="number" id="tiempoLimite" value="5" min="1">
+
+<label>Modo</label>
+<select id="modo">
+  <option value="libre">Libre</option>
+  <option value="examen">Examen (10 sumas)</option>
+</select>
+
+<button onclick="iniciar()">▶️ Empezar</button>
+<button class="secondary" onclick="pausar()">⏸️ Pausar / Reanudar</button>
+<button class="danger" onclick="reiniciar()">🔄 Reiniciar</button>
+
+<div id="suma"></div>
+
+<input id="respuesta" type="number" placeholder="Escribe la respuesta y presiona Enter">
+
+<div id="resultado"></div>
+<div id="tiempo"></div>
+<div id="contador"></div>
+
+<h3>📊 Clasificación</h3>
+<table>
+<thead>
+<tr>
+  <th>Nombre</th>
+  <th>Puntaje</th>
+  <th>Dígitos</th>
+  <th>Tiempo</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+
+</div>
+
+<script>
+let num1,num2,correcto,tiempo,intervalo;
+let pausado=false;
+let pregunta=0;
+let puntaje=0;
+let tablaDatos=[];
+
+function iniciar(){
+  pregunta=0;
+  puntaje=0;
+  resultado.textContent="";
+  contador.textContent="";
+  nuevaSuma();
+}
+
+function nuevaSuma(){
+  const max=+dificultad.value;
+  tiempo=+tiempoLimite.value;
+
+  num1=Math.floor(Math.random()*max);
+  num2=Math.floor(Math.random()*max);
+  correcto=num1+num2;
+
+  suma.textContent=`${num1} + ${num2}`;
+  tiempoDiv();
+  pausado=false;
+
+  clearInterval(intervalo);
+  intervalo=setInterval(()=>{
+    if(!pausado){
+      tiempo--;
+      tiempoDiv();
+      if(tiempo===0){
+        clearInterval(intervalo);
+        mostrarResultado(false);
+      }
+    }
+  },1000);
+}
+
+function tiempoDiv(){
+  document.getElementById("tiempo").textContent=`⏱️ ${tiempo}`;
+}
+
+respuesta.addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !pausado){
+    clearInterval(intervalo);
+    mostrarResultado(+respuesta.value===correcto);
+  }
+});
+
+function mostrarResultado(acierto){
+  if(acierto){
+    puntaje++;
+    resultado.textContent="✅ Correcto";
+  }else{
+    resultado.textContent=`❌ Resultado: ${correcto}`;
+  }
+
+  respuesta.value="";
+
+  setTimeout(()=>{
+    if(modo.value==="examen"){
+      pregunta++;
+      contador.textContent=`Pregunta ${pregunta}/10`;
+      if(pregunta===10){
+        finalizar();
+        return;
+      }
+    }
+    nuevaSuma();
+  },1500);
+}
+
+function guardar(){
+  const nombreJugador = nombre.value || "Anónimo";
+
+  const datos = {
+    nombre: nombreJugador,
+    puntaje: puntaje,
+    digitos: dificultad.value === "10" ? "1" :
+             dificultad.value === "100" ? "2" : "3",
+    tiempoConfig: tiempoLimite.value
+  };
+
+  guardarOnline(datos);
+}
+
+
+
+}
+
+function cargarTabla(){
+  tabla.innerHTML="";
+  tablaDatos
+    .sort((a,b)=>b.puntaje-a.puntaje)
+    .forEach(j=>{
+      tabla.innerHTML+=`
+        <tr>
+          <td>${j.nombre}</td>
+          <td>${j.puntaje}</td>
+          <td>${j.digitos || "-"}</td>
+          <td>${j.tiempoConfig ? j.tiempoConfig + "s" : "-"}</td>
+        </tr>
+      `;
+    });
+}
+
+function pausar(){
+  pausado=!pausado;
+}
+
+function reiniciar(){
+  clearInterval(intervalo);
+  suma.textContent="";
+  resultado.textContent="";
+  document.getElementById("tiempo").textContent="";
+  contador.textContent="";
+  puntaje=0;
+  pregunta=0;
+}
+
+cargarTabla();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBXgjYfPgbogkpBeFpXpwyx143cxDBm5pE",
+  authDomain: "sumas-salon.firebaseapp.com",
+  databaseURL: "https://sumas-salon-default-rtdb.firebaseio.com",
+  projectId: "sumas-salon",
+  storageBucket: "sumas-salon.firebasestorage.app",
+  messagingSenderId: "765245264170",
+  appId: "1:765245264170:web:5c22903a9450efdd938e53"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const rankingRef = db.ref("ranking");
+
+function guardarOnline(datos){
+  rankingRef.push(datos);
+}
+
+rankingRef.on("value", snapshot=>{
+  const data = snapshot.val();
+  tabla.innerHTML="";
+
+  if(data){
+    const lista = Object.values(data)
+      .sort((a,b)=>b.puntaje-a.puntaje);
+
+    lista.forEach(j=>{
+      tabla.innerHTML+=`
+        <tr>
+          <td>${j.nombre}</td>
+          <td>${j.puntaje}</td>
+          <td>${j.digitos}</td>
+          <td>${j.tiempoConfig}s</td>
+        </tr>
+      `;
+    });
+  }
+});
+</script>
+</body>
+</html>
