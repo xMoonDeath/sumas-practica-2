@@ -99,17 +99,40 @@ th{
 <h2>🏆 Competencia de Sumas</h2>
 
 <label>Nombre del estudiante</label>
+<label>Grado</label>
+<select id="grado">
+  <option value="11-1">11-1</option>
+  <option value="11-2">11-2</option>
+  <option value="11-3">11-3</option>
+  <option value="11-4">11-4</option>
+  <option value="11-5">11-5</option>
+  <option value="11-6">11-6</option>
+</select>
 <input id="nombre" placeholder="Ej: Carlos">
 
 <label>Dificultad</label>
-<select id="dificultad">
+<select id="dificultad" onchange="actualizarTiempoAutomatico()">
   <option value="10">1 dígito</option>
   <option value="100">2 dígitos</option>
   <option value="1000">3 dígitos</option>
 </select>
 
-<label>Tiempo por suma (seg)</label>
-<input type="number" id="tiempoLimite" value="5" min="1">
+<label>Tiempo por suma</label>
+<div id="tiempoMostrado" style="
+  padding:10px;
+  margin-top:6px;
+  border-radius:8px;
+  background:#edf2f7;
+  font-weight:bold;
+">
+</div>
+
+<select id="tiempoLimite" style="display:none">
+  <option value="5">5</option>
+  <option value="10">10</option>
+  <option value="15">15</option>
+</select>
+
 
 <label>Modo</label>
 <select id="modo">
@@ -161,24 +184,58 @@ const resultado = document.getElementById("resultado");
 const tiempoTexto = document.getElementById("tiempo");
 const contador = document.getElementById("contador");
 const tabla = document.getElementById("tabla");
+const grado = document.getElementById("grado");
 
+let rankingRef = null;
 let num1,num2,correcto,tiempo,intervalo;
 let pausado=false;
 let pregunta=0;
 let puntaje=0;
+let jugando = false;
 let tablaDatos=[];
 let listaGlobal = [];
 let modoProfesor = false;
+let nombreJugadorActual = "";
 const PASSWORD = "Mor-ta-de-la1357";
+
+function actualizarTiempoAutomatico(){
+  let texto = "";
+  
+  if(dificultad.value === "10"){
+    tiempoLimite.value = "5";
+    texto = "5 segundos";
+  }
+  else if(dificultad.value === "100"){
+    tiempoLimite.value = "10";
+    texto = "10 segundos";
+  }
+  else{
+    tiempoLimite.value = "15";
+    texto = "15 segundos";
+  }
+
+  document.getElementById("tiempoMostrado").textContent = texto;
+}
+
 
 function iniciar(){
 
-  // validar nombre
   if(nombre.value.trim() === ""){
     alert("Por favor escribe tu nombre antes de empezar.");
     nombre.focus();
     return;
   }
+
+  rankingRef = db.ref("ranking/" + grado.value);
+escucharRanking();
+
+
+  nombreJugadorActual = nombre.value.trim();
+
+  jugando = true;
+  dificultad.disabled = true;
+  modo.disabled = true;
+  nombre.disabled = true;
 
   pregunta=0;
   puntaje=0;
@@ -186,6 +243,8 @@ function iniciar(){
   contador.textContent="";
   nuevaSuma();
 }
+
+
 
 
 function nuevaSuma(){
@@ -218,13 +277,15 @@ function tiempoDiv(){
 }
 
 respuesta.addEventListener("keydown",e=>{
-  if(e.key==="Enter" && !pausado){
+  if(e.key==="Enter" && !pausado && jugando){
     clearInterval(intervalo);
     mostrarResultado(+respuesta.value===correcto);
   }
 });
 
+
 function mostrarResultado(acierto){
+
   if(acierto){
     puntaje++;
     resultado.textContent="✅ Correcto";
@@ -235,6 +296,9 @@ function mostrarResultado(acierto){
   respuesta.value="";
 
   setTimeout(()=>{
+
+    if(!jugando) return;
+
     if(modo.value==="examen"){
       pregunta++;
       contador.textContent=`Pregunta ${pregunta}/10`;
@@ -243,18 +307,19 @@ function mostrarResultado(acierto){
         return;
       }
     }
+
     nuevaSuma();
+
   },1500);
+
 }
 
-function guardar(){
-  const nombreJugador = nombre.value.trim() !== "" 
-  ? nombre.value.trim() 
-  : "Anónimo";
 
+
+function guardar(){
 
   const datos = {
-    nombre: nombreJugador,
+    nombre: nombreJugadorActual,
     puntaje: puntaje,
     digitos: dificultad.value === "10" ? "1" :
              dificultad.value === "100" ? "2" : "3",
@@ -264,28 +329,17 @@ function guardar(){
   guardarOnline(datos);
 }
 
+
+
 function finalizar(){
+  jugando=false;
+  clearInterval(intervalo);
+
   suma.textContent="🏁 Examen terminado";
   tiempoTexto.textContent="";
+  resultado.textContent=`Puntaje final: ${puntaje}/10`;
+
   guardar();
-}
-
-
-
-function cargarTabla(){
-  tabla.innerHTML="";
-  tablaDatos
-    .sort((a,b)=>b.puntaje-a.puntaje)
-    .forEach(j=>{
-      tabla.innerHTML+=`
-        <tr>
-          <td>${j.nombre}</td>
-          <td>${j.puntaje}</td>
-          <td>${j.digitos || "-"}</td>
-          <td>${j.tiempoConfig ? j.tiempoConfig + "s" : "-"}</td>
-        </tr>
-      `;
-    });
 }
 
 function pausar(){
@@ -294,30 +348,31 @@ function pausar(){
 
 function reiniciar(){
   clearInterval(intervalo);
+  jugando=false;
+
   suma.textContent="";
   resultado.textContent="";
   tiempoTexto.textContent="";
   contador.textContent="";
   puntaje=0;
   pregunta=0;
+
+  dificultad.disabled=false;
+  modo.disabled=false;
+  nombre.disabled=false;
 }
 
 function activarProfesor(){
-  const clave = prompt("Ingrese la contraseña de profesor:");
-
-  if(clave === PASSWORD){
-    modoProfesor = true;
+  const clave=prompt("Ingrese la contraseña de profesor:");
+  if(clave===PASSWORD){
+    modoProfesor=true;
     document.getElementById("colAccion").style.display="table-cell";
-    dibujarTabla(); // ← ESTA ES LA CLAVE
+    dibujarTabla();
     alert("Modo profesor activado");
-  }else{
-    alert("Contraseña incorrecta");
-  }
+  }else alert("Contraseña incorrecta");
 }
 
-
-
-cargarTabla();
+actualizarTiempoAutomatico();
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -335,25 +390,30 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const rankingRef = db.ref("ranking");
 
 function guardarOnline(datos){
   rankingRef.push(datos);
 }
 
-rankingRef.on("value", snapshot=>{
-  const data = snapshot.val();
 
-  if(data){
-    listaGlobal = Object.entries(data)
-      .map(([id,val])=>({id,...val}))
-      .sort((a,b)=>b.puntaje-a.puntaje);
-  }else{
-    listaGlobal = [];
-  }
+function escucharRanking(){
 
-  dibujarTabla();
-});
+  rankingRef.off();
+
+  rankingRef.on("value", snapshot=>{
+    const data = snapshot.val();
+
+    if(data){
+      listaGlobal = Object.entries(data)
+        .map(([id,val])=>({id,...val}))
+        .sort((a,b)=>b.puntaje-a.puntaje);
+    }else{
+      listaGlobal = [];
+    }
+
+    dibujarTabla();
+  });
+}
 
 function dibujarTabla(){
   tabla.innerHTML="";
