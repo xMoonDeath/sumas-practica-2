@@ -167,6 +167,7 @@ let pausado=false;
 let pregunta=0;
 let puntaje=0;
 let tablaDatos=[];
+let listaGlobal = [];
 let modoProfesor = false;
 const PASSWORD = "Mor-ta-de-la1357";
 
@@ -307,6 +308,7 @@ function activarProfesor(){
   if(clave === PASSWORD){
     modoProfesor = true;
     document.getElementById("colAccion").style.display="table-cell";
+    dibujarTabla(); // ← ESTA ES LA CLAVE
     alert("Modo profesor activado");
   }else{
     alert("Contraseña incorrecta");
@@ -341,28 +343,36 @@ function guardarOnline(datos){
 
 rankingRef.on("value", snapshot=>{
   const data = snapshot.val();
-  tabla.innerHTML="";
 
   if(data){
-    const lista = Object.entries(data)
+    listaGlobal = Object.entries(data)
       .map(([id,val])=>({id,...val}))
       .sort((a,b)=>b.puntaje-a.puntaje);
-
-    lista.forEach(j=>{
-      tabla.innerHTML+=`
-        <tr>
-          <td>${j.nombre}</td>
-          <td>${j.puntaje}</td>
-          <td>${j.digitos}</td>
-          <td>${j.tiempoConfig}s</td>
-          <td>
-            ${modoProfesor ? `<button onclick="borrarRegistro('${j.id}')">🗑</button>` : ""}
-          </td>
-        </tr>
-      `;
-    });
+  }else{
+    listaGlobal = [];
   }
+
+  dibujarTabla();
 });
+
+function dibujarTabla(){
+  tabla.innerHTML="";
+
+  listaGlobal.forEach(j=>{
+    tabla.innerHTML+=`
+      <tr>
+        <td>${j.nombre}</td>
+        <td>${j.puntaje}</td>
+        <td>${j.digitos}</td>
+        <td>${j.tiempoConfig}s</td>
+        <td>
+          ${modoProfesor ? `<button onclick="borrarRegistro('${j.id}')">🗑</button>` : ""}
+        </td>
+      </tr>
+    `;
+  });
+}
+
 
 function borrarRegistro(id){
   if(confirm("¿Eliminar este resultado?")){
