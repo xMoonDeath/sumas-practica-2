@@ -165,12 +165,21 @@ let puntaje=0;
 let tablaDatos=[];
 
 function iniciar(){
+
+  // validar nombre
+  if(nombre.value.trim() === ""){
+    alert("Por favor escribe tu nombre antes de empezar.");
+    nombre.focus();
+    return;
+  }
+
   pregunta=0;
   puntaje=0;
   resultado.textContent="";
   contador.textContent="";
   nuevaSuma();
 }
+
 
 function nuevaSuma(){
   const max=+dificultad.value;
@@ -232,7 +241,10 @@ function mostrarResultado(acierto){
 }
 
 function guardar(){
-  const nombreJugador = nombre.value || "Anónimo";
+  const nombreJugador = nombre.value.trim() !== "" 
+  ? nombre.value.trim() 
+  : "Anónimo";
+
 
   const datos = {
     nombre: nombreJugador,
