@@ -203,6 +203,12 @@ function mostrarResultado(acierto){
     resultado.textContent=`❌ Resultado: ${correcto}`;
   }
 
+	function finalizar(){
+  suma.textContent="🏁 Examen terminado";
+  document.getElementById("tiempo").textContent="";
+  guardar();
+}
+
   respuesta.value="";
 
   setTimeout(()=>{
@@ -232,9 +238,6 @@ function guardar(){
   guardarOnline(datos);
 }
 
-
-
-}
 
 function cargarTabla(){
   tabla.innerHTML="";
