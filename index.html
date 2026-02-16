@@ -145,6 +145,19 @@ th{
 </div>
 
 <script>
+// referencias HTML
+const nombre = document.getElementById("nombre");
+const dificultad = document.getElementById("dificultad");
+const tiempoLimite = document.getElementById("tiempoLimite");
+const modo = document.getElementById("modo");
+
+const suma = document.getElementById("suma");
+const respuesta = document.getElementById("respuesta");
+const resultado = document.getElementById("resultado");
+const tiempoTexto = document.getElementById("tiempo");
+const contador = document.getElementById("contador");
+const tabla = document.getElementById("tabla");
+
 let num1,num2,correcto,tiempo,intervalo;
 let pausado=false;
 let pregunta=0;
@@ -185,7 +198,7 @@ function nuevaSuma(){
 }
 
 function tiempoDiv(){
-  document.getElementById("tiempo").textContent=`⏱️ ${tiempo}`;
+  tiempoTexto.textContent=`⏱️ ${tiempo}`;
 }
 
 respuesta.addEventListener("keydown",e=>{
@@ -202,12 +215,6 @@ function mostrarResultado(acierto){
   }else{
     resultado.textContent=`❌ Resultado: ${correcto}`;
   }
-
-	function finalizar(){
-  suma.textContent="🏁 Examen terminado";
-  document.getElementById("tiempo").textContent="";
-  guardar();
-}
 
   respuesta.value="";
 
@@ -234,6 +241,12 @@ function guardar(){
              dificultad.value === "100" ? "2" : "3",
     tiempoConfig: tiempoLimite.value
   };
+
+function finalizar(){
+  suma.textContent="🏁 Examen terminado";
+  tiempoTexto.textContent="";
+  guardar();
+}
 
   guardarOnline(datos);
 }
