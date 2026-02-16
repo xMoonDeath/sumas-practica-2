@@ -140,7 +140,7 @@ th{
   <th>Puntaje</th>
   <th>Dígitos</th>
   <th>Tiempo</th>
-  <th>Acción</th>
+  <th id="colAccion" style="display:none">Acción</th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
@@ -306,12 +306,14 @@ function activarProfesor(){
 
   if(clave === PASSWORD){
     modoProfesor = true;
+    document.getElementById("colAccion").style.display="table-cell";
     alert("Modo profesor activado");
-    cargarRanking(); // refresca tabla
   }else{
     alert("Contraseña incorrecta");
   }
 }
+
+
 
 cargarTabla();
 </script>
@@ -342,23 +344,24 @@ rankingRef.on("value", snapshot=>{
   tabla.innerHTML="";
 
   if(data){
-    const lista = Object.values(data)
-      .sort((a,b)=>b.puntaje-a.puntaje);	
+    const lista = Object.entries(data)
+      .map(([id,val])=>({id,...val}))
+      .sort((a,b)=>b.puntaje-a.puntaje);
 
-    lista.forEach((j,i)=>{
-  const key = Object.keys(data)[i];
-
-  tabla.innerHTML+=`
-    <tr>
-      <td>${j.nombre}</td>
-      <td>${j.puntaje}</td>
-      <td>${j.digitos}</td>
-      <td>${j.tiempoConfig}s</td>
-      <td>
-        ${modoProfesor ? `<button onclick="borrarRegistro('${key}')">🗑</button>` : ""}
-      </td>
-    </tr>
-  `;
+    lista.forEach(j=>{
+      tabla.innerHTML+=`
+        <tr>
+          <td>${j.nombre}</td>
+          <td>${j.puntaje}</td>
+          <td>${j.digitos}</td>
+          <td>${j.tiempoConfig}s</td>
+          <td>
+            ${modoProfesor ? `<button onclick="borrarRegistro('${j.id}')">🗑</button>` : ""}
+          </td>
+        </tr>
+      `;
+    });
+  }
 });
 
 function borrarRegistro(id){
@@ -366,6 +369,7 @@ function borrarRegistro(id){
     rankingRef.child(id).remove();
   }
 }
+
 </script>
 </body>
 </html>
