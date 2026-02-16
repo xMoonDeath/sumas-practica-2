@@ -100,7 +100,7 @@ th{
 
 <label>Nombre del estudiante</label>
 <label>Grado</label>
-<select id="grado">
+<select id="grado" onchange="cambiarGrado()">
   <option value="11-1">11-1</option>
   <option value="11-2">11-2</option>
   <option value="11-3">11-3</option>
@@ -373,6 +373,14 @@ function activarProfesor(){
 }
 
 actualizarTiempoAutomatico();
+
+cambiarGrado();
+
+function cambiarGrado(){
+  rankingRef = db.ref("ranking/" + grado.value);
+  escucharRanking();
+}
+
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
