@@ -120,6 +120,9 @@ th{
 <button onclick="iniciar()">▶️ Empezar</button>
 <button class="secondary" onclick="pausar()">⏸️ Pausar / Reanudar</button>
 <button class="danger" onclick="reiniciar()">🔄 Reiniciar</button>
+<button onclick="activarProfesor()" style="background:#2d3748">
+🔐 Modo profesor
+</button>
 
 <div id="suma"></div>
 
@@ -137,6 +140,7 @@ th{
   <th>Puntaje</th>
   <th>Dígitos</th>
   <th>Tiempo</th>
+  <th>Acción</th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
@@ -163,6 +167,8 @@ let pausado=false;
 let pregunta=0;
 let puntaje=0;
 let tablaDatos=[];
+let modoProfesor = false;
+const PASSWORD = "Mor-ta-de-la1357";
 
 function iniciar(){
 
@@ -295,6 +301,18 @@ function reiniciar(){
   pregunta=0;
 }
 
+function activarProfesor(){
+  const clave = prompt("Ingrese la contraseña de profesor:");
+
+  if(clave === PASSWORD){
+    modoProfesor = true;
+    alert("Modo profesor activado");
+    cargarRanking(); // refresca tabla
+  }else{
+    alert("Contraseña incorrecta");
+  }
+}
+
 cargarTabla();
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -325,20 +343,29 @@ rankingRef.on("value", snapshot=>{
 
   if(data){
     const lista = Object.values(data)
-      .sort((a,b)=>b.puntaje-a.puntaje);
+      .sort((a,b)=>b.puntaje-a.puntaje);	
 
-    lista.forEach(j=>{
-      tabla.innerHTML+=`
-        <tr>
-          <td>${j.nombre}</td>
-          <td>${j.puntaje}</td>
-          <td>${j.digitos}</td>
-          <td>${j.tiempoConfig}s</td>
-        </tr>
-      `;
-    });
-  }
+    lista.forEach((j,i)=>{
+  const key = Object.keys(data)[i];
+
+  tabla.innerHTML+=`
+    <tr>
+      <td>${j.nombre}</td>
+      <td>${j.puntaje}</td>
+      <td>${j.digitos}</td>
+      <td>${j.tiempoConfig}s</td>
+      <td>
+        ${modoProfesor ? `<button onclick="borrarRegistro('${key}')">🗑</button>` : ""}
+      </td>
+    </tr>
+  `;
 });
+
+function borrarRegistro(id){
+  if(confirm("¿Eliminar este resultado?")){
+    rankingRef.child(id).remove();
+  }
+}
 </script>
 </body>
 </html>
