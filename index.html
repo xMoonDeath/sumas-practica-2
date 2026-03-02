@@ -339,15 +339,14 @@ function finalizar(){
   tiempoTexto.textContent="";
   resultado.textContent=`Puntaje final: ${puntaje}/10`;
 
-  guardar();
-  guardarEnExcel({
+ guardar();
+guardarEnExcel({
   nombre: nombreJugadorActual,
   puntaje: puntaje,
   digitos: dificultad.value === "10" ? "1" :
            dificultad.value === "100" ? "2" : "3",
   tiempoConfig: tiempoLimite.value
 });
-}
 
 function pausar(){
   pausado=!pausado;
@@ -412,7 +411,7 @@ function guardarOnline(datos){
 
   function guardarEnExcel(datos){
 
-  fetch("PEGA_AQUI_TU_URL", {
+  fetch("PEGA_AQUI_TU_URL_DEL_SCRIPT", {
     method: "POST",
     body: JSON.stringify({
       nombre: datos.nombre,
@@ -421,9 +420,11 @@ function guardarOnline(datos){
       digitos: datos.digitos,
       tiempo: datos.tiempoConfig
     })
-  });
+  })
+  .then(res => res.text())
+  .then(res => console.log("Guardado en Excel:", res))
+  .catch(err => console.error("Error al guardar en Excel:", err));
 }
-
 
 function escucharRanking(){
 
@@ -472,4 +473,5 @@ function borrarRegistro(id){
 </script>
 </body>
 </html>
+
 
