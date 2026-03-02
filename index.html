@@ -339,14 +339,16 @@ function finalizar(){
   tiempoTexto.textContent="";
   resultado.textContent=`Puntaje final: ${puntaje}/10`;
 
- guardar();
-guardarEnExcel({
-  nombre: nombreJugadorActual,
-  puntaje: puntaje,
-  digitos: dificultad.value === "10" ? "1" :
-           dificultad.value === "100" ? "2" : "3",
-  tiempoConfig: tiempoLimite.value
-});
+  guardar();
+
+  guardarEnExcel({
+    nombre: nombreJugadorActual,
+    puntaje: puntaje,
+    digitos: dificultad.value === "10" ? "1" :
+             dificultad.value === "100" ? "2" : "3",
+    tiempoConfig: tiempoLimite.value
+  });
+}
 
 function pausar(){
   pausado=!pausado;
@@ -413,7 +415,9 @@ function guardarEnExcel(datos){
 
   fetch("https://script.google.com/macros/s/AKfycbxsla9l2c5dmmIKVbNW9X72kEmjK8l0lZHOlnsKGKKVA-C13vmSPHTy0ghKaWp8tSU/exec", {
     method: "POST",
-    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({
       nombre: datos.nombre,
       grado: grado.value,
@@ -421,7 +425,10 @@ function guardarEnExcel(datos){
       digitos: datos.digitos,
       tiempo: datos.tiempoConfig
     })
-  });
+  })
+  .then(res => res.text())
+  .then(res => console.log("Respuesta Sheets:", res))
+  .catch(err => console.error("Error:", err));
 }
   
 function escucharRanking(){
@@ -471,6 +478,7 @@ function borrarRegistro(id){
 </script>
 </body>
 </html>
+
 
 
 
