@@ -409,10 +409,11 @@ function guardarOnline(datos){
   rankingRef.push(datos);
 }
 
-  function guardarEnExcel(datos){
+function guardarEnExcel(datos){
 
-  fetch("PEGA_AQUI_TU_URL_DEL_SCRIPT", {
+  fetch("https://script.google.com/macros/s/AKfycbwbbte1dhNvKeZ4Hd1dJiZrj5SnOI-6NoCD0yGNlSijgMBDFv09Tc1ElbzWMzehvNM/exec", {
     method: "POST",
+    mode: "no-cors",
     body: JSON.stringify({
       nombre: datos.nombre,
       grado: grado.value,
@@ -420,12 +421,9 @@ function guardarOnline(datos){
       digitos: datos.digitos,
       tiempo: datos.tiempoConfig
     })
-  })
-  .then(res => res.text())
-  .then(res => console.log("Guardado en Excel:", res))
-  .catch(err => console.error("Error al guardar en Excel:", err));
+  });
 }
-
+  
 function escucharRanking(){
 
   rankingRef.off();
@@ -473,5 +471,6 @@ function borrarRegistro(id){
 </script>
 </body>
 </html>
+
 
 
