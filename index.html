@@ -382,7 +382,6 @@ function activarProfesor(){
 
 actualizarTiempoAutomatico();
 
-cambiarGrado();
 
 function cambiarGrado(){
   rankingRef = db.ref("ranking/" + grado.value);
@@ -406,6 +405,8 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+  cambiarGrado();
 
 function guardarOnline(datos){
   rankingRef.push(datos);
@@ -478,6 +479,7 @@ function borrarRegistro(id){
 </script>
 </body>
 </html>
+
 
 
 
