@@ -415,20 +415,18 @@ function guardarOnline(datos){
 function guardarEnExcel(datos){
 
   fetch("https://script.google.com/macros/s/AKfycbx6-yuA_ohDcOmE_QDfjGa4CRGTJUdxrZWWyhya7w-wT-PoNTNAl262Y7iL-b7bNLI/exec", {
-  method: "POST",
-  mode: "no-cors",   // 👈 ESTO ES CLAVE
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    nombre: nombreJugador,
-    puntaje: puntuacionFinal,
-    grado: gradoSeleccionado
-  })
-});
-  .then(res => res.text())
-  .then(res => console.log("Respuesta Sheets:", res))
-  .catch(err => console.error("Error:", err));
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      nombre: datos.nombre,
+      puntaje: datos.puntaje,
+      grado: grado.value
+    })
+  });
+
 }
   
 function escucharRanking(){
@@ -478,6 +476,7 @@ function borrarRegistro(id){
 </script>
 </body>
 </html>
+
 
 
 
